@@ -1,4 +1,4 @@
-Here is the README.md file formatted as requested, with the table converted to a list and the installation section removed.
+
 
 Intelligent Logistics Engine (SwiftEx) 📦 🚚
 Course: Data Structures & Algorithms (CSC-200L)
