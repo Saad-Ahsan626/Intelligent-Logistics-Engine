@@ -1,0 +1,45 @@
+{
+  "cities": [
+    { "name": "Lahore", "zone": "Zone A", "x": 500, "y": 220 },
+    { "name": "Islamabad", "zone": "Zone B", "x": 460, "y": 70 },
+    { "name": "Karachi", "zone": "Zone C", "x": 200, "y": 500 },
+    { "name": "Peshawar", "zone": "Zone B", "x": 400, "y": 50 },
+    { "name": "Multan", "zone": "Zone A", "x": 420, "y": 320 },
+    { "name": "Faisalabad", "zone": "Zone A", "x": 460, "y": 250 },
+    { "name": "Quetta", "zone": "Zone D", "x": 150, "y": 320 },
+    { "name": "Hafizabad", "zone": "Zone A", "x": 470, "y": 200 },
+    { "name": "Rawalpindi", "zone": "Zone B", "x": 460, "y": 80 },
+    { "name": "Sukkur", "zone": "Zone C", "x": 280, "y": 420 },
+    { "name": "Township", "zone": "A", "x": 493, "y": 216 }
+  ],
+  "roads": [
+    { "u": "Lahore", "v": "Islamabad", "weight": 375, "blocked": false },
+    { "u": "Lahore", "v": "Faisalabad", "weight": 180, "blocked": false },
+    { "u": "Lahore", "v": "Multan", "weight": 345, "blocked": false },
+    { "u": "Lahore", "v": "Hafizabad", "weight": 105, "blocked": false },
+    { "u": "Lahore", "v": "Township", "weight": 15, "blocked": false },
+    { "u": "Islamabad", "v": "Peshawar", "weight": 155, "blocked": false },
+    { "u": "Islamabad", "v": "Rawalpindi", "weight": 20, "blocked": false },
+    { "u": "Karachi", "v": "Sukkur", "weight": 470, "blocked": false },
+    { "u": "Karachi", "v": "Quetta", "weight": 690, "blocked": false },
+    { "u": "Multan", "v": "Faisalabad", "weight": 240, "blocked": false },
+    { "u": "Multan", "v": "Sukkur", "weight": 490, "blocked": false },
+    { "u": "Faisalabad", "v": "Hafizabad", "weight": 90, "blocked": false },
+    { "u": "Quetta", "v": "Sukkur", "weight": 390, "blocked": false }
+  ],
+  "riders": [
+    { "name": "Asad Malik", "type": "Express", "load": 0, "capacity": 1 },
+    { "name": "Usman Tariq", "type": "Express", "load": 0, "capacity": 1 },
+    { "name": "Fahad Mustafa", "type": "Standard", "load": 0, "capacity": 1 },
+    { "name": "Ahmed Raza", "type": "Standard", "load": 0, "capacity": 1 },
+    { "name": "Imran Haider", "type": "Express", "load": 0, "capacity": 1 },
+    { "name": "Zain Sheikh", "type": "Express", "load": 0, "capacity": 1 },
+    { "name": "Hamza Ali", "type": "Standard", "load": 0, "capacity": 1 },
+    { "name": "Hassan Bib", "type": "Standard", "load": 0, "capacity": 1 },
+    { "name": "Ali Khan", "type": "Standard", "load": 0, "capacity": 1 },
+    { "name": "Bilal Ahmed", "type": "Standard", "load": 0, "capacity": 1 }
+  ],
+  "parcels": [
+    { "id": "1", "status": "Warehouse (Sorted)", "status_code": 1, "destination": "Township", "zone": "A", "rider": "Asad Malik" }
+  ]
+}

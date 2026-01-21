@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistics Engine Live Monitor </title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: rgba(148, 163, 184, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-sizing: border-box;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .status-badge {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent-cyan);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1000px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        main {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            min-height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #map-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+            overflow: hidden;
+            /* Canvas handles dragging, no scroll */
+            cursor: grab;
+        }
+
+        #map-container:active {
+            cursor: grabbing;
+        }
+
+        canvas {
+            background: transparent;
+            max-width: 100%;
+            height: auto;
+        }
+
+        aside {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 300px;
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            max-height: 50%;
+            overflow: hidden;
+        }
+
+        .panel h2 {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .panel-content {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px 4px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            background-color: var(--text-secondary);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .status-green {
+            background-color: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .status-red {
+            background-color: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        .status-yellow {
+            background-color: var(--accent-yellow);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        /* Control Panel Styles */
+        .control-group {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 5px;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #334155;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #475569;
+        }
+
+        .btn-accent {
+            background: var(--accent-cyan);
+            color: #0f172a;
+        }
+
+        .btn-accent:hover {
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+        }
+    </style>
+    <script>
+        // --- API COMMANDS ---
+        // Server functions removed for visualization-only mode.
+
+    </script>
+</head>
+
+<body>
+    <header>
+        <div>
+            <h1>Logistics Engine <span style="font-size:0.8em; opacity:0.7">Monitor</span></h1>
+        </div>
+        <div>
+            <span class="status-badge" id="conn-status">CONNECTING...</span>
+            <span style="font-size:0.7em; color:#94a3b8; margin-left:10px;"></span>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <main>
+            <div id="map-container">
+                <canvas id="mapCanvas" width="800" height="600"></canvas>
+            </div>
+            <div
+                style="position:absolute; bottom:10px; left:10px; color:#64748b; font-size:0.8em; pointer-events:none;">
+                Drag Nodes To Rearrange
+            </div>
+        </main>
+
+        <aside>
+            <!-- Control Panel Removed as per request -->
+
+            <div class="panel">
+                <h2>Active Parcels <span id="parcel-count">0</span></h2>
+                <div class="panel-content">
+                    <table id="parcel-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Status</th>
+                                <th>Loc</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Rider Fleet <span id="rider-count">0</span></h2>
+                <div class="panel-content">
+                    <table id="rider-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Load</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mapCanvas');
+        const ctx = canvas.getContext('2d');
+        const LOGICAL_WIDTH = 800;
+        const LOGICAL_HEIGHT = 600;
+
+        // --- INTERACTIVITY STATE ---
+        let localPositions = {}; // Storage for user-modified positions { "Lahore": {x:500, y:200} }
+        let isDragging = false;
+        let dragNodeName = null;
+        let dragOffset = { x: 0, y: 0 };
+        let hoveredNode = null;
+
+        // --- DATA STATE ---
+        let data = { cities: [], roads: [], riders: [], parcels: [] };
+
+        // --- MOUSE EVENTS ---
+        canvas.addEventListener('mousedown', (e) => {
+            const pos = getMousePos(e);
+
+            // Check collision with any city
+            for (const city of data.cities) {
+                const cityPos = getCityPos(city);
+                const dist = Math.hypot(pos.x - cityPos.x, pos.y - cityPos.y);
+
+                if (dist < 15) { // Hit radius
+                    isDragging = true;
+                    dragNodeName = city.name;
+                    dragOffset = { x: pos.x - cityPos.x, y: pos.y - cityPos.y };
+                    return;
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const pos = getMousePos(e);
+
+            if (isDragging && dragNodeName) {
+                // Update local position
+                localPositions[dragNodeName] = {
+                    x: pos.x - dragOffset.x,
+                    y: pos.y - dragOffset.y
+                };
+                render(); // Immediate re-render
+            } else {
+                // Hover logic
+                let hit = null;
+                for (const city of data.cities) {
+                    const cityPos = getCityPos(city);
+                    const dist = Math.hypot(pos.x - cityPos.x, pos.y - cityPos.y);
+                    if (dist < 15) hit = city.name;
+                }
+
+                if (hit !== hoveredNode) {
+                    hoveredNode = hit;
+                    canvas.style.cursor = hit ? 'pointer' : 'grab';
+                    render();
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            dragNodeName = null;
+            canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            dragNodeName = null;
+        });
+
+        function getMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (evt.clientX - rect.left) * scaleX,
+                y: (evt.clientY - rect.top) * scaleY
+            };
+        }
+
+        // --- COORDINATE RESOLUTION ---
+        function getCityPos(city) {
+            // Priority: Local Dragged Position > Server Dynamic Position
+            if (localPositions[city.name]) {
+                return localPositions[city.name];
+            }
+            return { x: city.x, y: city.y };
+        }
+
+        // --- DATA FETCHING ---
+        async function fetchData() {
+            try {
+                const response = await fetch('monitor_data.json?nocache=' + new Date().getTime());
+                if (response.ok) {
+                    const newData = await response.json();
+
+                    // Preserve User Edits: Only update data, don't overwrite localPositions if they exist.
+                    // If a node is new in visual graph (not in local map), we let it be.
+
+                    data = newData;
+
+                    document.getElementById('conn-status').innerText = "ACTIVE";
+                    document.getElementById('conn-status').style.color = "#10b981";
+
+                    if (!isDragging) render(); // Don't jitter while dragging
+                    updateTables();
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('conn-status').innerText = "DISCONNECTED";
+                document.getElementById('conn-status').style.color = "#ef4444";
+            }
+        }
+
+        // --- RENDERING ---
+        function drawCity(city) {
+            const pos = getCityPos(city);
+            const isHover = (hoveredNode === city.name);
+            const isDrag = (dragNodeName === city.name);
+
+            // Glow
+            if (isHover || isDrag) {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(6, 182, 212, 0.8)';
+            } else {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(6, 182, 212, 0.3)';
+            }
+
+            // Node Body
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, isHover ? 8 : 6, 0, Math.PI * 2);
+            ctx.fillStyle = isDrag ? '#0ea5e9' : '#1e293b';
+            ctx.fill();
+
+            // Node Border
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#06b6d4';
+            ctx.stroke();
+
+            // Label
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = isHover ? '#fff' : '#cbd5e1';
+            ctx.font = isHover ? 'bold 12px Inter' : '12px Inter';
+            ctx.fillText(city.name, pos.x + 12, pos.y + 4);
+        }
+
+        function drawRoad(road) {
+            const uCity = data.cities.find(c => c.name === road.u);
+            const vCity = data.cities.find(c => c.name === road.v);
+
+            if (!uCity || !vCity) return;
+
+            const u = getCityPos(uCity);
+            const v = getCityPos(vCity);
+
+            ctx.beginPath();
+            ctx.moveTo(u.x, u.y);
+            ctx.lineTo(v.x, v.y);
+            ctx.lineWidth = 2;
+
+            if (road.blocked) {
+                ctx.strokeStyle = '#ef4444';
+                ctx.setLineDash([5, 5]);
+            } else {
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)'; // Slightly more visible for interactive feel
+                ctx.setLineDash([]);
+            }
+
+            ctx.stroke();
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+            // Draw Roads first (behind nodes)
+            data.roads.forEach(drawRoad);
+
+            // Draw Cities
+            data.cities.forEach(drawCity);
+        }
+
+        function updateTables() {
+            const pTable = document.querySelector('#parcel-table tbody');
+            pTable.innerHTML = '';
+            document.getElementById('parcel-count').innerText = data.parcels.length;
+
+            data.parcels.forEach(p => {
+                const tr = document.createElement('tr');
+                let colorClass = 'status-yellow';
+                if (p.status_code === 5) colorClass = 'status-green';
+                if (p.status_code === 3) colorClass = 'status-yellow';
+                if (p.status_code === 7 || p.status_code === 9) colorClass = 'status-red';
+
+                tr.innerHTML = `
+                    <td><span style="font-family:'JetBrains Mono'">${p.id}</span></td>
+                    <td><span class="status-dot ${colorClass}"></span>${p.status}</td>
+                    <td>${p.zone}</td>
+                `;
+                pTable.appendChild(tr);
+            });
+
+            const rTable = document.querySelector('#rider-table tbody');
+            rTable.innerHTML = '';
+            document.getElementById('rider-count').innerText = data.riders.length;
+
+            data.riders.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.name}</td>
+                    <td><div style="background:#334155; height:6px; width:50px; border-radius:3px; overflow:hidden">
+                        <div style="background:${r.load >= r.capacity ? '#ef4444' : '#10b981'}; height:100%; width:${(r.load / r.capacity) * 100}%"></div>
+                    </div></td>
+                    <td style="font-size:0.8em; color:#94a3b8">${r.type}</td>
+                `;
+                rTable.appendChild(tr);
+            });
+        }
+
+        setInterval(fetchData, 1000);
+        fetchData();
+
+        // Initial resize/render trigger
+        render();
+    </script>
+</body>
+
+
+</html>
